@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NewTicketForm from './NewTicketForm';
 import TicketList from './TicketList';
 import TicketDetail from './TicketDetail';
 import EditTicketForm from './EditTicketForm';
+
+import db from './../firebase';
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
 
 function TicketControl() {
 
@@ -10,6 +13,29 @@ function TicketControl() {
   const [mainTicketList, setMainTicketList] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [editing, setEditing] = useState(false);
+
+  useEffect(() => { 
+    const unSubscribe = onSnapshot(
+      collection(db, "tickets"), 
+      (collectionSnapshot) => {
+        const tickets = [];
+        collectionSnapshot.forEach((doc) => {
+            tickets.push({
+              names: doc.data().names, 
+              location: doc.data().location, 
+              issue: doc.data().issue, 
+              id: doc.id
+            });
+        });
+        setMainTicketList(tickets);
+      }, 
+      (error) => {
+        // do something with error
+      }
+    );
+
+    return () => unSubscribe();
+  }, []);
 
   const handleClick = () => {
     if (selectedTicket != null) {
@@ -21,10 +47,9 @@ function TicketControl() {
     }
   }
 
-  const handleAddingNewTicketToList = (newTicket) => {
-    const newMainTicketList = mainTicketList.concat(newTicket);
-    setMainTicketList(newMainTicketList);
-    setFormVisibleOnPage(false)
+  const handleAddingNewTicketToList = async (newTicketData) => {
+    await addDoc(collection(db, "tickets"), newTicketData);
+    setFormVisibleOnPage(false);
   }
 
   const handleChangingSelectedTicket = (id) => {
