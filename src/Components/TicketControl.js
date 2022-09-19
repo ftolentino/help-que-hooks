@@ -13,24 +13,22 @@ function TicketControl() {
   const [mainTicketList, setMainTicketList] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [editing, setEditing] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => { 
     const unSubscribe = onSnapshot(
       collection(db, "tickets"), 
       (collectionSnapshot) => {
-        const tickets = [];
-        collectionSnapshot.forEach((doc) => {
-            tickets.push({
-              names: doc.data().names, 
-              location: doc.data().location, 
-              issue: doc.data().issue, 
-              id: doc.id
-            });
+        const tickets = collectionSnapshot.docs.map((doc) => {
+          return {
+            ...doc.data(),
+            id: doc.id
+          };
         });
         setMainTicketList(tickets);
       }, 
       (error) => {
-        // do something with error
+        setError(error.message);
       }
     );
 
@@ -79,7 +77,9 @@ function TicketControl() {
 
   let currentlyVisibleState = null;
   let buttonText = null; 
-  if (editing) {
+  if (error) {
+    currentlyVisibleState = <p>There was an error: {error}</p>
+  } else if (editing) {
     currentlyVisibleState = 
       <EditTicketForm 
         ticket = {selectedTicket}
@@ -106,7 +106,7 @@ function TicketControl() {
   return (
     <React.Fragment>
       {currentlyVisibleState}
-      <button onClick={handleClick}>{buttonText}</button>
+      {error ? null : <button onClick={handleClick}>{buttonText}</button>}
     </React.Fragment>
   );
 }
