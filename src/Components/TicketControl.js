@@ -4,8 +4,8 @@ import TicketList from './TicketList';
 import TicketDetail from './TicketDetail';
 import EditTicketForm from './EditTicketForm';
 
-import db from './../firebase';
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
+import { db, auth } from './../firebase';
+import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "firebase/firestore";
 
 function TicketControl() {
 
@@ -31,7 +31,6 @@ function TicketControl() {
         setError(error.message);
       }
     );
-
     return () => unSubscribe();
   }, []);
 
@@ -59,56 +58,52 @@ function TicketControl() {
     setEditing(true);
   }
 
-  const handleEditingTicketInList = (ticketToEdit) => {
-    const editedMainTicketList = mainTicketList
-    .filter(ticket => ticket.id !== selectedTicket.id)
-    .concat(ticketToEdit);
-    setMainTicketList(editedMainTicketList);
+  const handleEditingTicketInList = async (ticketToEdit) => {
+    await updateDoc(doc(db, "tickets", ticketToEdit.id), ticketToEdit);
     setEditing(false);
     setSelectedTicket(null);
   }
 
-  const handleDeletingTicket = (id) => {
-    const newMainTicketList = mainTicketList.filter(ticket => ticket.id !== id);
-    setMainTicketList(newMainTicketList);
+  const handleDeletingTicket = async (id) => {
+    await deleteDoc(doc(db, "tickets", id));
     setSelectedTicket(null);
-  }
+  } 
 
+  if (auth.currentUser == null) {
+    return (
+      <React.Fragment>
+        <h1>You must be signed in to access the queue.</h1>
+      </React.Fragment>
+    )
+  } else if (auth.currentUser != null) {
+    let currentlyVisibleState = null;
+    let buttonText = null; 
 
-  let currentlyVisibleState = null;
-  let buttonText = null; 
-  if (error) {
-    currentlyVisibleState = <p>There was an error: {error}</p>
-  } else if (editing) {
-    currentlyVisibleState = 
-      <EditTicketForm 
-        ticket = {selectedTicket}
-        onEditTicket = {handleEditingTicketInList} />
-    buttonText = "Return to Ticket List";
-  } else if (selectedTicket != null) {
-    currentlyVisibleState = 
-    <TicketDetail 
-      ticket = {selectedTicket} 
-      onClickingDelete = {handleDeletingTicket}
+    if (error) {
+      currentlyVisibleState = <p>There was an error: {error}</p>
+    } else if (editing) {      
+      currentlyVisibleState = <EditTicketForm ticket = {selectedTicket} onEditTicket = {handleEditingTicketInList} />
+      buttonText = "Return to Ticket List";
+    } else if (selectedTicket != null) {
+      currentlyVisibleState = <TicketDetail 
+      ticket={selectedTicket} 
+      onClickingDelete={handleDeletingTicket}
       onClickingEdit = {handleEditClick} />
-    buttonText = "Return to Ticket List";
+      buttonText = "Return to Ticket List";
+    } else if (formVisibleOnPage) {
+      currentlyVisibleState = <NewTicketForm onNewTicketCreation={handleAddingNewTicketToList}/>;
+      buttonText = "Return to Ticket List"; 
+    } else {
+      currentlyVisibleState = <TicketList onTicketSelection={handleChangingSelectedTicket} ticketList={mainTicketList} />;
+      buttonText = "Add Ticket"; 
+    }
+    return (
+      <React.Fragment>
+        {currentlyVisibleState}
+        {error ? null : <button onClick={handleClick}>{buttonText}</button>} 
+      </React.Fragment>
+    );
   }
-  else if (formVisibleOnPage) {
-    currentlyVisibleState = <NewTicketForm onNewTicketCreation={handleAddingNewTicketToList}  />;
-    buttonText = "Return to Ticket List";
-  } else {
-    currentlyVisibleState = 
-      <TicketList 
-        onTicketSelection={handleChangingSelectedTicket} 
-        ticketList={mainTicketList} />;
-    buttonText = "Add Ticket";
-  }
-  return (
-    <React.Fragment>
-      {currentlyVisibleState}
-      {error ? null : <button onClick={handleClick}>{buttonText}</button>}
-    </React.Fragment>
-  );
 }
 
 export default TicketControl;
