@@ -107,7 +107,7 @@ function TicketControl() {
         <h1>You must be signed in to access the queue.</h1>
       </React.Fragment>
     )
-  } else if (auth.currentUser != null) {
+    } else if (auth.currentUser != null) {
     let currentlyVisibleState = null;
     let buttonText = null; 
 

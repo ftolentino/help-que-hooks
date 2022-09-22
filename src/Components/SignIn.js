@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { auth } from "./../firebase.js";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 
 function SignIn(){ 
   // signUp Hook
   const [signUpSuccess, setSignUpSuccess] = useState(null);
   // signIn Hook
   const [signInSuccess, setSignInSuccess] = useState(null);
-  // signOut Hook
-  const [signOutSuccess, setSignOutSuccess] = useState(null);
 
   function doSignUp(event) {
     event.preventDefault();
@@ -33,15 +31,6 @@ function SignIn(){
       })
       .catch((error) => {
         setSignInSuccess(`There was an error signing in: ${error.message}!`)
-      });
-  }
-
-  function doSignOut() {
-    signOut(auth)
-      .then(function() {
-        setSignOutSuccess("You have successfully signed out!");
-      }).catch(function(error) {
-        setSignOutSuccess(`There was an error signing out: ${error.message}!`);
       });
   }
   
@@ -74,11 +63,6 @@ function SignIn(){
           placeholder='Password' />
         <button type='submit'>Sign in</button>
       </form>
-
-      <h1>Sign Out</h1>
-      {signOutSuccess}
-      <br />
-      <button onClick={doSignOut}>Sign out</button>
     </React.Fragment>
   );
 }

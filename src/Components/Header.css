@@ -1,0 +1,18 @@
+.homeLink{
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+}
+
+.headerLink{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 8px;
+}
+
+.linkContainer{
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+}
