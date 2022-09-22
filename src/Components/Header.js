@@ -10,12 +10,12 @@ import './Header.css'
 const Header = () => {
   return (
     <React.Fragment>
-      <h1>
+      <h1 className="header">
         Help Queue
       </h1>
       <Link to="/">
         <div className="homeLink">
-          <HomeIcon />
+          <HomeIcon className="homeIcon" style={{fontSize: 50}} />
         </div>
       </Link>
       <div className="linkContainer">

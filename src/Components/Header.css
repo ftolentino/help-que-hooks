@@ -1,3 +1,11 @@
+.header{
+  text-align: center;
+}
+
+.homeIcon{
+  font-size: large;
+  color: darkslategrey;
+}
 .homeLink{
   display: flex;
   flex-direction: row;
